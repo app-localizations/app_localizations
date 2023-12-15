@@ -1,7 +1,6 @@
 name: On Website Deploy
 "on":
   push:
-    # (1)
     branches:
       - "main"
     paths:
@@ -13,16 +12,21 @@ jobs:
   build_and_deploy_web:
     name: Build & Deploy Flutter to Web
     runs-on: ubuntu-latest
-    # (2)
     steps:
       - uses: actions/checkout@v2
 
-      # xxx
-      - name: Copy Files
-        run: |
-          mkdir temp_dir
-          ls
-          cp -r test/* temp_dir  # 复制你想要同步的文件或文件夹
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: 🌍 Enable Web
+        run: flutter config --enable-web
+
+      - name: 📦 Get packages
+        run: flutter pub get
+
+      - name: 🏭 Build Web Application
+        run: flutter build web --release
 
       - name: Checkout Destination Repository
         uses: actions/checkout@v2
@@ -35,7 +39,7 @@ jobs:
         run: |
           # 删除 destination_repo 目录下除了 .git 以外的所有文件
           find destination_repo -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} \;
-          cp -r temp_dir/* destination_repo/
+          cp -r build/web/* destination_repo/
 
       - name: Commit and Push
         run: |
