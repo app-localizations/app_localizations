@@ -33,6 +33,8 @@ jobs:
 
       - name: Copy Files to Destination Repository
         run: |
+          # 删除 destination_repo 目录下除了 .git 以外的所有文件
+          find destination_repo -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} \;
           cp -r temp_dir/* destination_repo/
 
       - name: Commit and Push
