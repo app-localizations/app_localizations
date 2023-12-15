@@ -1,0 +1,47 @@
+name: On Website Deploy
+"on":
+  push:
+    # (1)
+    branches:
+      - "main"
+    paths:
+      - 'lib/**'
+      - 'web/**'
+      - 'pubspec.yaml'
+
+jobs:
+  build_and_deploy_web:
+    name: Build & Deploy Flutter to Web
+    runs-on: ubuntu-latest
+    # (2)
+    steps:
+      - uses: actions/checkout@v2
+
+      # xxx
+      - name: Copy Files
+        run: |
+          mkdir temp_dir
+          cp test/ temp_dir  # 复制你想要同步的文件或文件夹
+
+      - name: Checkout Destination Repository
+        uses: actions/checkout@v2
+        with:
+          repository: app-localizations/app-localizations.github.io
+          token: ${{ secrets.PAT }}  # 使用你的 PAT
+          path: 'destination_repo'
+
+      - name: Copy Files to Destination Repository
+        run: |
+          cp -r temp_dir/* destination_repo/
+
+      - name: Commit and Push
+        run: |
+          cd destination_repo
+          git config --local user.email "cezres@163.com"
+          git config --local user.name "cezres"
+          git add .
+          git commit -m "Update files"
+          git push --force
+
+
+
