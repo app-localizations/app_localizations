@@ -21,7 +21,8 @@ jobs:
       - name: Copy Files
         run: |
           mkdir temp_dir
-          cp test/ temp_dir  # 复制你想要同步的文件或文件夹
+          ls
+          cp -r test/* temp_dir  # 复制你想要同步的文件或文件夹
 
       - name: Checkout Destination Repository
         uses: actions/checkout@v2
