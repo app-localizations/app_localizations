@@ -9,22 +9,19 @@ class AppLocalizationLanguagesCubit
   AppLocalizationLanguagesCubit()
       : super(const AppLocalizationLanguagesState());
 
-  void changeSelectedLanguage(Language language) {
-    emit(state.copyWith(selectedLanguage: language));
-  }
-
   @override
   AppLocalizationLanguagesState? fromJson(Map<String, dynamic> json) {
-    return AppLocalizationLanguagesState(
+    final result = AppLocalizationLanguagesState(
       sourceLanguage: Language.fromCode(json['sourceLanguage'])!,
       selectedLanguage: Language.fromCode(json['selectedLanguage'])!,
-      supportedLanguages: (json['supportedLanguages'] as List<String>)
+      supportedLanguages: (json['supportedLanguages'] as List)
           .map((e) => Language.fromCode(e)!)
           .toList(),
       needTranslateStringCount: (json['needTranslateStringCount']
               as Map<String, dynamic>)
           .map((key, value) => MapEntry(Language.fromCode(key)!, value as int)),
     );
+    return result;
   }
 
   @override
@@ -37,6 +34,10 @@ class AppLocalizationLanguagesCubit
       'needTranslateStringCount': state.needTranslateStringCount
           .map((key, value) => MapEntry(key.code, value)),
     };
+  }
+
+  void changeSelectedLanguage(Language language) {
+    emit(state.copyWith(selectedLanguage: language));
   }
 
   void updateNeedTranslateStringCount(Language language, int count) {

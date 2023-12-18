@@ -84,7 +84,9 @@ class LanguagesSidebar extends StatelessWidget {
                       Icons.download,
                       size: 18,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      context.read<AppLocalizationsCubit>().export(context);
+                    },
                   ),
                   // CupertinoButton(
                   //   child: const Icon(

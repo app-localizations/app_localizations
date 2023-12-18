@@ -3,7 +3,9 @@ import 'dart:typed_data';
 
 import 'package:app_localizations/cubit/app_localization_languages_cubit.dart';
 import 'package:app_localizations/utils/pick_files.dart';
+import 'package:archive/archive.dart';
 import 'package:equatable/equatable.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -23,10 +25,54 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
     return state.toJson();
   }
 
+  Future<void> export(BuildContext context) async {
+    final Archive archive = Archive();
+
+    final languages = context.read<AppLocalizationLanguagesCubit>();
+    final supportedLanguages = languages.state.supportedLanguages;
+    for (var language in supportedLanguages) {
+      // final arb = {};
+      String arb = "{";
+      for (var element in state.strings.values) {
+        final localizedString = element.localizations[language];
+        if (localizedString == null) {
+          continue;
+        }
+        // arb[localizedString.key] = localizedString.value
+        //     .replaceAll("\n", "\\n")
+        //     .replaceAll("\"", "\\\"");
+        final key = localizedString.key;
+        final value = localizedString.value
+            .replaceAll("\n", "\\n")
+            .replaceAll("\"", "\\\"");
+        arb += '\n\t"$key": "$value",';
+      }
+      arb = arb.substring(0, arb.length - 1);
+      arb += "\n}";
+      // final bytes = utf8.encode(json.encode(arb));
+      final bytes = utf8.encode(arb);
+      archive.addFile(ArchiveFile(
+        'app_${language.code}.arb',
+        bytes.length,
+        bytes,
+      ));
+    }
+
+    final ZipEncoder encoder = ZipEncoder();
+    final zipBytes = encoder.encode(archive);
+    if (zipBytes == null) {
+      throw Exception('zipBytes is null');
+    }
+
+    await FileSaver.instance.saveFile(
+      name: 'images',
+      bytes: Uint8List.fromList(zipBytes),
+      ext: 'zip',
+    );
+  }
+
   void importFlutterIntlArbFiles(
       BuildContext context, List<CommomFile> files) async {
-    debugPrint("importFlutterIntlArbFiles: $files");
-
     final languages = context.read<AppLocalizationLanguagesCubit>();
 
     final newStrings = Map<String, AppLocalizationString>.from(state.strings);
@@ -55,14 +101,11 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
 
       try {
         final arbString = utf8.decode(bytes);
-        debugPrint("Arb: $arbString");
-
         final map = json.decode(arbString) as Map<String, dynamic>;
 
         for (var element in map.entries) {
           final key = element.key;
           final value = element.value as String;
-          // newState = newState.addNewLocalizedString(language, key, value);
 
           AppLocalizationString? localizationString = newStrings[key];
           if (localizationString == null) {

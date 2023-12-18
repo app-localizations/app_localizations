@@ -29,17 +29,10 @@ class LocalizedStringText extends StatelessWidget {
       children.add(
         WidgetSpan(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-            decoration: BoxDecoration(
-                // color: Colors.grey[300],
-                // color: Colors.orange[600],
-                // borderRadius: BorderRadius.circular(4),
-                ),
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
             child: Text(
               middle,
               style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    // color: Colors.grey[800],
-                    // color: Colors.white,
                     color: Colors.cyan,
                     fontWeight: FontWeight.bold,
                   ),

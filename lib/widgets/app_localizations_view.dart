@@ -2,6 +2,7 @@ import 'package:app_localizations/cubit/app_localization_languages_cubit.dart';
 import 'package:app_localizations/cubit/app_localizations_cubit.dart';
 import 'package:app_localizations/cubit/filter_and_sort_cubit.dart';
 import 'package:app_localizations/widgets/app_localization_row.dart';
+import 'package:app_localizations/widgets/localized_string_text_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -85,13 +86,12 @@ class AppLocalizationsView extends StatelessWidget {
         });
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(
-            vertical: 16,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           itemCount: strings.length,
           itemBuilder: (context, index) {
             if (index != 0) {
               return Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -99,6 +99,8 @@ class AppLocalizationsView extends StatelessWidget {
                     ),
                     child: Divider(
                       color: Colors.grey[300],
+                      height: 1,
+                      thickness: 1,
                     ),
                   ),
                   _itemBuilder(context, strings[index]),
@@ -113,9 +115,33 @@ class AppLocalizationsView extends StatelessWidget {
   }
 
   Widget _itemBuilder(BuildContext context, AppLocalizationString string) {
-    return AppLocalizationRow(
-      string: string,
-      languages: languages,
+    final isEnter = ValueNotifier(false);
+    return MouseRegion(
+      onEnter: (event) => isEnter.value = true,
+      onExit: (event) => isEnter.value = false,
+      child: GestureDetector(
+        onTap: () {
+          showLocalizedStringTextEditor(
+            context,
+            string,
+            languages.selectedLanguage,
+          );
+        },
+        child: ValueListenableBuilder(
+          valueListenable: isEnter,
+          builder: (context, value, child) => Container(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8,
+            ),
+            color: value ? Colors.grey[200] : null,
+            child: child,
+          ),
+          child: AppLocalizationRow(
+            string: string,
+            languages: languages,
+          ),
+        ),
+      ),
     );
   }
 }
