@@ -1,6 +1,7 @@
 import 'package:app_localizations/cubit/app_localizations_cubit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void showLocalizedStringTextEditor(
   BuildContext context,
@@ -16,16 +17,30 @@ void showLocalizedStringTextEditor(
   showDialog(
     context: context,
     builder: (context) {
-      return LocalizedStringTextEditor();
+      return LocalizedStringTextEditor(
+        string: string,
+        language: language,
+      );
     },
   );
 }
 
 class LocalizedStringTextEditor extends StatelessWidget {
-  const LocalizedStringTextEditor({super.key});
+  const LocalizedStringTextEditor({
+    super.key,
+    required this.string,
+    required this.language,
+  });
+
+  final AppLocalizationString string;
+  final Language language;
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController controller = TextEditingController(
+      text: string.localizations[language]?.value ?? "",
+    );
+
     return AlertDialog(
       title: const Text('Edit Localized String'),
       content: Container(
@@ -36,11 +51,12 @@ class LocalizedStringTextEditor extends StatelessWidget {
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const TextField(
+        child: TextField(
+          controller: controller,
           maxLines: 100,
           autofocus: true,
-          // textInputAction: TextInputAction.done,
-          decoration: InputDecoration(
+          textInputAction: TextInputAction.newline,
+          decoration: const InputDecoration(
             hintText: "Enter localization string",
             border: InputBorder.none,
           ),
@@ -56,6 +72,8 @@ class LocalizedStringTextEditor extends StatelessWidget {
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
+
+            context.read<AppLocalizationsCubit>();
           },
           child: const Text('Save'),
         ),

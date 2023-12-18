@@ -152,6 +152,83 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
     ));
   }
 
+  void updateLocalizedString(
+    BuildContext context, {
+    required String string,
+    required String key,
+    required Language language,
+  }) {
+    final newStrings = Map<String, AppLocalizationString>.from(state.strings);
+    final localizationString = newStrings[key];
+    if (localizationString == null) {
+      return;
+    }
+
+    final languages = context.read<AppLocalizationLanguagesCubit>();
+
+    final oldLocalizedString = localizationString.localizations[language];
+    final oldIsNeedTranslate = oldLocalizedString == null ||
+        oldLocalizedString.value.isEmpty ||
+        oldLocalizedString.version != localizationString.version;
+
+    final newIsNeedTranslate = string.isEmpty;
+
+    if (string.isEmpty) {
+      localizationString.localizations.remove(language);
+    } else {
+      localizationString.localizations[language] = LocalizedString(
+        key: key,
+        value: string,
+        language: language,
+        version: languages.state.sourceLanguage == language
+            ? localizationString.version + 1
+            : localizationString.version,
+      );
+    }
+
+    newStrings[key] = localizationString;
+    emit(state.copyWith(strings: newStrings));
+
+    /// Update need translate string count
+    final newNeedTranslateStringCount =
+        Map<Language, int>.from(languages.state.needTranslateStringCount);
+
+    // 1. 翻译文本为空
+    if (string.isEmpty) {
+      // 此前无翻译文本
+      if (oldLocalizedString == null || oldLocalizedString.value.isEmpty) {
+        return;
+      }
+      // 删除此前有效的翻译文本
+      if (oldLocalizedString.version == localizationString.version) {
+        newNeedTranslateStringCount[language] =
+            newNeedTranslateStringCount[language]! - 1;
+      }
+    } else {
+      if (oldLocalizedString?.version == localizationString.version) {
+        //
+      } else {
+        //
+      }
+    }
+
+    // 2. 添加翻译文本或更新翻译文本版本
+    // 3. 修改翻译文本但未更新翻译文本版本
+    if (oldIsNeedTranslate != newIsNeedTranslate) {
+      if (newIsNeedTranslate) {
+        newNeedTranslateStringCount[language] =
+            newNeedTranslateStringCount[language]! + 1;
+      } else {
+        newNeedTranslateStringCount[language] =
+            newNeedTranslateStringCount[language]! - 1;
+      }
+
+      languages.emit(languages.state.copyWith(
+        needTranslateStringCount: newNeedTranslateStringCount,
+      ));
+    }
+  }
+
   void _updateNeedTranslateStringCount(
     AppLocalizationLanguagesCubit languages,
     Language language,
