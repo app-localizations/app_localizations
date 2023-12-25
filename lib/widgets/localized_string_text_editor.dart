@@ -1,5 +1,4 @@
 import 'package:app_localizations/cubit/app_localizations_cubit.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,12 +7,6 @@ void showLocalizedStringTextEditor(
   AppLocalizationString string,
   Language language,
 ) {
-  // showCupertinoDialog(
-  //   context: context,
-  //   builder: (context) {
-  //     return LocalizedStringTextEditor();
-  //   },
-  // );
   showDialog(
     context: context,
     builder: (context) {
@@ -73,7 +66,12 @@ class LocalizedStringTextEditor extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
 
-            context.read<AppLocalizationsCubit>();
+            context.read<AppLocalizationsCubit>().updateLocalizedString(
+                  context,
+                  string: controller.text,
+                  key: string.key,
+                  language: language,
+                );
           },
           child: const Text('Save'),
         ),

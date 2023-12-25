@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:app_localizations/cubit/app_localization_languages_cubit.dart';
 import 'package:app_localizations/utils/pick_files.dart';
 import 'package:archive/archive.dart';
 import 'package:equatable/equatable.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -31,16 +31,12 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
     final languages = context.read<AppLocalizationLanguagesCubit>();
     final supportedLanguages = languages.state.supportedLanguages;
     for (var language in supportedLanguages) {
-      // final arb = {};
       String arb = "{";
       for (var element in state.strings.values) {
         final localizedString = element.localizations[language];
         if (localizedString == null) {
           continue;
         }
-        // arb[localizedString.key] = localizedString.value
-        //     .replaceAll("\n", "\\n")
-        //     .replaceAll("\"", "\\\"");
         final key = localizedString.key;
         final value = localizedString.value
             .replaceAll("\n", "\\n")
@@ -49,7 +45,6 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
       }
       arb = arb.substring(0, arb.length - 1);
       arb += "\n}";
-      // final bytes = utf8.encode(json.encode(arb));
       final bytes = utf8.encode(arb);
       archive.addFile(ArchiveFile(
         'app_${language.code}.arb',
@@ -159,24 +154,20 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
     required Language language,
   }) {
     final newStrings = Map<String, AppLocalizationString>.from(state.strings);
-    final localizationString = newStrings[key];
+    var localizationString = newStrings[key];
     if (localizationString == null) {
       return;
     }
+    final localizations = Map<Language, LocalizedString>.from(
+      localizationString.localizations,
+    );
 
     final languages = context.read<AppLocalizationLanguagesCubit>();
 
-    final oldLocalizedString = localizationString.localizations[language];
-    final oldIsNeedTranslate = oldLocalizedString == null ||
-        oldLocalizedString.value.isEmpty ||
-        oldLocalizedString.version != localizationString.version;
-
-    final newIsNeedTranslate = string.isEmpty;
-
     if (string.isEmpty) {
-      localizationString.localizations.remove(language);
+      localizations.remove(language);
     } else {
-      localizationString.localizations[language] = LocalizedString(
+      localizations[language] = LocalizedString(
         key: key,
         value: string,
         language: language,
@@ -186,70 +177,78 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
       );
     }
 
-    newStrings[key] = localizationString;
+    newStrings[key] = localizationString.copyWith(
+      localizations: localizations,
+      version: languages.state.sourceLanguage == language
+          ? localizationString.version + 1
+          : localizationString.version,
+    );
+
     emit(state.copyWith(strings: newStrings));
 
     /// Update need translate string count
-    final newNeedTranslateStringCount =
-        Map<Language, int>.from(languages.state.needTranslateStringCount);
-
-    // 1. 翻译文本为空
-    if (string.isEmpty) {
-      // 此前无翻译文本
-      if (oldLocalizedString == null || oldLocalizedString.value.isEmpty) {
-        return;
-      }
-      // 删除此前有效的翻译文本
-      if (oldLocalizedString.version == localizationString.version) {
-        newNeedTranslateStringCount[language] =
-            newNeedTranslateStringCount[language]! - 1;
-      }
-    } else {
-      if (oldLocalizedString?.version == localizationString.version) {
-        //
-      } else {
-        //
-      }
-    }
-
-    // 2. 添加翻译文本或更新翻译文本版本
-    // 3. 修改翻译文本但未更新翻译文本版本
-    if (oldIsNeedTranslate != newIsNeedTranslate) {
-      if (newIsNeedTranslate) {
-        newNeedTranslateStringCount[language] =
-            newNeedTranslateStringCount[language]! + 1;
-      } else {
-        newNeedTranslateStringCount[language] =
-            newNeedTranslateStringCount[language]! - 1;
-      }
-
-      languages.emit(languages.state.copyWith(
-        needTranslateStringCount: newNeedTranslateStringCount,
-      ));
-    }
+    _updateNeedTranslateStringCountOfAllLanguage(languages);
   }
 
   void _updateNeedTranslateStringCount(
     AppLocalizationLanguagesCubit languages,
     Language language,
   ) {
-    final newNeedTranslateStringCount =
-        Map<Language, int>.from(languages.state.needTranslateStringCount);
-
-    int count = 0;
-
-    for (var element in state.strings.values) {
-      final localizedString = element.localizations[language];
-      if (localizedString == null) {
-        count++;
-      } else if (localizedString.value.isEmpty) {
-        count++;
-      } else if (localizedString.version != element.version) {
-        count++;
-      }
-    }
-
-    newNeedTranslateStringCount[language] = count;
-    languages.updateNeedTranslateStringCount(language, count);
+    languages.emit(languages.state.copyWith(
+      needTranslateStringCount: {
+        ...languages.state.needTranslateStringCount,
+        language: _calculateNeedTranslateStringCount(
+          strings: state.strings,
+          language: language,
+        ),
+      },
+    ));
   }
+
+  void _updateNeedTranslateStringCountOfAllLanguage(
+      AppLocalizationLanguagesCubit languages) async {
+    compute(
+      (message) {
+        final AppLocalizationLanguagesState languages = message[0];
+        final Map<String, AppLocalizationString> strings = message[1];
+
+        final needTranslateStringCount = <Language, int>{};
+        for (var element in languages.supportedLanguages) {
+          needTranslateStringCount[element] =
+              _calculateNeedTranslateStringCount(
+            strings: strings,
+            language: element,
+          );
+        }
+        return needTranslateStringCount;
+      },
+      <dynamic>[languages.state, state.strings],
+    ).then(
+      (value) => languages.emit(
+        languages.state.copyWith(
+          needTranslateStringCount: value,
+        ),
+      ),
+    );
+  }
+}
+
+int _calculateNeedTranslateStringCount({
+  required Map<String, AppLocalizationString> strings,
+  required Language language,
+}) {
+  int count = 0;
+
+  for (var element in strings.values) {
+    final localizedString = element.localizations[language];
+    if (localizedString == null) {
+      count++;
+    } else if (localizedString.value.isEmpty) {
+      count++;
+    } else if (localizedString.version != element.version) {
+      count++;
+    }
+  }
+
+  return count;
 }

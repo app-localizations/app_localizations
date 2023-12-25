@@ -114,6 +114,15 @@ class AppLocalizationTabBar extends StatelessWidget {
     required String title,
     required AppLocalizationSortBy sortBy,
   }) {
+    AppLocalizationSortBy currentSortBy = filterAndSort.sortBy;
+    if (sortBy == AppLocalizationSortBy.value) {
+      if (languagesState.sourceLanguage == languagesState.selectedLanguage) {
+        if (currentSortBy == AppLocalizationSortBy.source) {
+          currentSortBy = AppLocalizationSortBy.value;
+        }
+      }
+    }
+
     return CupertinoButton(
       padding: const EdgeInsets.all(0),
       child: Row(
@@ -121,7 +130,7 @@ class AppLocalizationTabBar extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                  fontWeight: filterAndSort.sortBy == sortBy
+                  fontWeight: currentSortBy == sortBy
                       ? FontWeight.bold
                       : FontWeight.normal,
                 ),

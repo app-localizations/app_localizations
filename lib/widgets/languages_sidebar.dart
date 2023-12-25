@@ -46,7 +46,7 @@ class LanguagesSidebar extends StatelessWidget {
                                   size: 16,
                                 )
                               : Text(
-                                  "${(percent * 100).toStringAsFixed(0)}%",
+                                  "${(percent * 100).toInt().toStringAsFixed(0)}%",
                                   style: const TextStyle(
                                     fontSize: 12,
                                   ),
