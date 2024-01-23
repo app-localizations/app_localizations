@@ -130,6 +130,7 @@ class AppLocalizationTabBar extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  fontSize: 12,
                   fontWeight: currentSortBy == sortBy
                       ? FontWeight.bold
                       : FontWeight.normal,

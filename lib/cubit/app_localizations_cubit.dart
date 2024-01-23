@@ -147,6 +147,16 @@ class AppLocalizationsCubit extends HydratedCubit<AppLocalizationsState> {
     ));
   }
 
+  void updateAppLocalizationString(BuildContext context,
+      {required AppLocalizationString localizationString}) {
+    final newStrings = Map<String, AppLocalizationString>.from(state.strings);
+    newStrings[localizationString.key] = localizationString;
+    emit(state.copyWith(strings: newStrings));
+
+    final languages = context.read<AppLocalizationLanguagesCubit>();
+    _updateNeedTranslateStringCountOfAllLanguage(languages);
+  }
+
   void updateLocalizedString(
     BuildContext context, {
     required String string,

@@ -1,16 +1,9 @@
 # app_localizations
 
-A new Flutter project.
+更方便的将 Flutter 工程中的本地化文本交给其他人翻译。
 
-## Getting Started
+[页面链接](https://app-localizations.github.io/)
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![img](https://github.com/app-localizations/app_localizations/blob/main/assets/1.png)
+![img](https://github.com/app-localizations/app_localizations/blob/main/assets/2.png)
+![img](https://github.com/app-localizations/app_localizations/blob/main/assets/3.png)

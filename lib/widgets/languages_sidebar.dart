@@ -62,22 +62,78 @@ class LanguagesSidebar extends StatelessWidget {
               ),
               Row(
                 children: [
-                  CupertinoButton(
+                  MenuAnchor(
+                    menuChildren: [
+                      MenuItemButton(
+                        child: const Text("Add Key"),
+                        onPressed: () {
+                          //
+                        },
+                      ),
+                      MenuItemButton(
+                        child: const Text("Add Language"),
+                        onPressed: () {
+                          //
+                        },
+                      ),
+                      MenuItemButton(
+                        child: const Text("Import Arb Files"),
+                        onPressed: () {
+                          pickFiles(context).then((value) {
+                            if (value.isEmpty) {
+                              return;
+                            }
+                            context
+                                .read<AppLocalizationsCubit>()
+                                .importFlutterIntlArbFiles(context, value);
+                          });
+                        },
+                      ),
+                    ],
                     child: const Icon(
                       CupertinoIcons.add_circled_solid,
                       size: 18,
                     ),
-                    onPressed: () {
-                      pickFiles(context).then((value) {
-                        if (value.isEmpty) {
-                          return;
-                        }
-                        context
-                            .read<AppLocalizationsCubit>()
-                            .importFlutterIntlArbFiles(context, value);
-                      });
+                    builder: (BuildContext context, MenuController controller,
+                        Widget? child) {
+                      return CupertinoButton(
+                        onPressed: () {
+                          controller.isOpen
+                              ? controller.close()
+                              : controller.open();
+                        },
+                        child: child!,
+                      );
                     },
                   ),
+                  // ContextMenuRegion(
+                  //   menuItems: [
+                  //     MenuItem(
+                  //       title: "Import Arb Files",
+                  //       onSelected: () {
+                  //         pickFiles(context).then((value) {
+                  //           if (value.isEmpty) {
+                  //             return;
+                  //           }
+                  //           context
+                  //               .read<AppLocalizationsCubit>()
+                  //               .importFlutterIntlArbFiles(context, value);
+                  //         });
+                  //       },
+                  //     ),
+                  //     MenuItem(title: "Add Language"),
+                  //   ],
+                  //   child: Container(
+                  //     padding: const EdgeInsets.all(8),
+                  //     child: const Icon(
+                  //       CupertinoIcons.add_circled_solid,
+                  //       size: 18,
+                  //     ),
+                  //   ),
+                  //   onItemSelected: (item) {
+                  //     item.onSelected?.call();
+                  //   },
+                  // ),
                   const Spacer(),
                   CupertinoButton(
                     child: const Icon(
@@ -88,13 +144,6 @@ class LanguagesSidebar extends StatelessWidget {
                       context.read<AppLocalizationsCubit>().export(context);
                     },
                   ),
-                  // CupertinoButton(
-                  //   child: const Icon(
-                  //     Icons.settings,
-                  //     size: 18,
-                  //   ),
-                  //   onPressed: () {},
-                  // ),
                 ],
               ),
             ],
