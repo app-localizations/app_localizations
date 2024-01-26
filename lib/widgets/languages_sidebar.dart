@@ -64,18 +64,18 @@ class LanguagesSidebar extends StatelessWidget {
                 children: [
                   MenuAnchor(
                     menuChildren: [
-                      MenuItemButton(
-                        child: const Text("Add Key"),
-                        onPressed: () {
-                          //
-                        },
-                      ),
-                      MenuItemButton(
-                        child: const Text("Add Language"),
-                        onPressed: () {
-                          //
-                        },
-                      ),
+                      // MenuItemButton(
+                      //   child: const Text("Add Key"),
+                      //   onPressed: () {
+                      //     //
+                      //   },
+                      // ),
+                      // MenuItemButton(
+                      //   child: const Text("Add Language"),
+                      //   onPressed: () {
+                      //     //
+                      //   },
+                      // ),
                       MenuItemButton(
                         child: const Text("Import Arb Files"),
                         onPressed: () {

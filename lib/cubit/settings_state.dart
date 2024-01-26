@@ -2,7 +2,7 @@ part of 'settings_cubit.dart';
 
 class SettingsState extends Equatable {
   const SettingsState({
-    this.isShowKey = true,
+    this.isShowKey = false,
     this.isHighlightSpace = true,
     this.isHighlightParameter = true,
   });
